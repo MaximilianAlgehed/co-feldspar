@@ -1,4 +1,5 @@
 {-# language GADTs #-}
+{-# language DataKinds #-}
 {-# language TypeFamilies #-}
 {-# language MultiParamTypeClasses #-}
 {-# language FlexibleInstances #-}
@@ -18,6 +19,7 @@ import Data.Inhabited
 
 import Data.Constraint
 import Data.Int (Int8)
+import Data.Word (Word8)
 import Data.List (genericTake)
 import Data.Typeable hiding (typeRep, TypeRep)
 
@@ -27,60 +29,48 @@ import Language.Syntactic.Functional
 import Language.Syntactic.Functional.Tuple
 
 -- operational-higher.
-import Control.Monad.Operational.Higher (Program, Param2, (:+:))
+import Control.Monad.Operational.Higher (ProgramT, Program, Param2, (:+:))
 
 --------------------------------------------------------------------------------
--- * Types.
+-- * Program.
 --------------------------------------------------------------------------------
-
--- | Representation of supported feldspar types as typed binary trees over
---   primitive types.
-type TypeRep pred rep = Struct pred rep
-
--- | Representation of supported value types and N-ary functions over such
---   types.
-data TypeRepF pred rep a
+{-
+data ProgramT instr fs m a
   where
-    ValT :: TypeRep pred rep a -> TypeRepF pred rep a
-    FunT :: TypeRep pred rep a -> TypeRepF pred rep b -> TypeRepF pred rep (a -> b)
+    Lift  :: m a -> ProgramT instr fs m a
+    Bind  :: ProgramT instr fs m a -> (a -> ProgramT instr fs m b) -> ProgramT instr fs m b
+    Instr :: instr '(ProgramT instr fs m, fs) a -> ProgramT instr fs m a
+-}
 
---------------------------------------------------------------------------------
-
--- | ... hmm ...
-type family Expr (lang :: * -> *) :: * -> *
-
--- | Domain associated with a language.
-type family DomainOf (lang :: * -> *) :: * -> *
-
--- | Predicate associated with a domain.
-type family PredicateOf (dom :: * -> *) :: * -> Constraint
-
--- | Type representation associated with a predicate.
-type family RepresentationOf (pred :: * -> Constraint) :: * -> *
-
---------------------------------------------------------------------------------
-  
--- | Supported types, that is, types which can be represented as nested pairs of
---   simpler values that respect `pred` and are in turn represented using `trep`.
-class (Eq a, Show a, Typeable a, Inhabited a) => Type pred a
+type family Expression (m :: * -> *) :: * -> *
   where
-    typeRep :: TypeRep pred (RepresentationOf pred) a
+    Expression (ProgramT instr '(exp, fs) m) = exp
 
--- Pairs of valid types are themselves also valid types.
-instance (Type pred a, Type pred b) => Type pred (a, b)
+type family Predicate (m :: * -> *) :: * -> *
   where
-    typeRep = Branch typeRep typeRep
+    Predicate (ProgramT instr '(exp, '(pred, fs)) m) = pred
+
+--------------------------------------------------------------------------------
+-- * Type.
+--------------------------------------------------------------------------------
+
+-- ...
+
+--------------------------------------------------------------------------------
+-- * Interface.
+--------------------------------------------------------------------------------
+
+class Eq exp => Bits exp
+  where
+    (.&.) :: pred a => exp a -> exp a -> exp a
 
 --------------------------------------------------------------------------------
 
--- | ...
-class    (Type pred a, pred a) => PrimType pred a
-instance (Type pred a, pred a) => PrimType pred a
+class Reference m
+  where
+    type Ref m
+    newRef :: pred a => a -> m (Ref m a)
 
---------------------------------------------------------------------------------
-
-type Length = Int8
-
-type Index  = Int8
+-- pred a ~ Syntactic a, Type (Predicate m) (Internal a), 
 
 --------------------------------------------------------------------------------
