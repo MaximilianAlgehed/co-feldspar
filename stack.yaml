@@ -9,6 +9,10 @@ packages:
     git: git@github.com:emilaxelsson/imperative-edsl.git
     commit: cc41a5a44ad5116ac06fc35598afe276d384ff5f
   extra-dep: true
+- location:
+    git: git@github.com:markus-git/language-vhdl.git
+    commit: 910abd11740367bc27229447c2b493e18a5eb436
+  extra-dep: true
 extra-deps:
 - BoundedChan-1.0.3.0
 - QuickCheck-2.10.0.1
@@ -26,7 +30,6 @@ extra-deps:
 - haskell-src-exts-1.18.2
 - haskell-src-meta-0.7.0.1
 - language-c-quote-0.11.7.3
-- language-vhdl-0.1.2.8
 - mainland-pretty-0.5.0.0
 - microlens-0.4.8.1
 - microlens-mtl-0.1.11.0

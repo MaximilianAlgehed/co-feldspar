@@ -43,6 +43,7 @@ arrays
      -- ...
      , Num (expr Int8)     
      , Syntax dom (expr Int8)
+     , Num (expr Index)
      )
   => m ()
 arrays =
